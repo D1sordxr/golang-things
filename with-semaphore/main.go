@@ -15,6 +15,8 @@ func main() {
 	app.Run()
 }
 
+// pkg
+
 type Log interface {
 	Info(msg string, args ...any)
 	Error(msg string, args ...any)
@@ -31,7 +33,6 @@ type Handler struct {
 }
 
 func NewHandler(
-	log Log,
 	uc useCase,
 ) *Handler {
 	return &Handler{
@@ -220,9 +221,9 @@ func NewApp() *App {
 	limitMid := NewLimiterMiddleware()
 	retryMid := new(RetryMiddleware)
 
-	useCase := new(mockUC)
+	uc := new(mockUC)
 
-	handler := NewHandler(log, useCase)
+	handler := NewHandler(uc)
 
 	router := NewRouter(
 		logMid,
