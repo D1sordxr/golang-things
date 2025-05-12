@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"golang-things/with-worker-pool/internal/presentation/http/delivery"
 	"golang-things/with-worker-pool/internal/presentation/http/delivery/health"
 	"net/http"
@@ -39,7 +40,12 @@ func (s *Server) StartServer() error {
 	s.RouteRegistry.RegisterAll(mux)
 
 	s.Server.Handler = mux
+
 	if err := s.Server.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			// Server closed
+			return nil
+		}
 		return err
 	}
 
