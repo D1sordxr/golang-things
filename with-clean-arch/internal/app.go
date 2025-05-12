@@ -2,17 +2,21 @@ package internal
 
 import (
 	"context"
+	appSrv "golang-things/with-worker-pool/internal/presentation/http"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 type App struct {
-	//
+	Server *appSrv.Server
 }
 
 func NewApp() *App {
-	return &App{}
+	server := appSrv.NewServer()
+	return &App{
+		Server: server,
+	}
 }
 
 func (a *App) Run() {
@@ -20,12 +24,12 @@ func (a *App) Run() {
 	defer cancel()
 
 	errChan := make(chan error, 1)
-	//go func() {
-	//	err := a.Server.StartServer()
-	//	if err != nil {
-	//		errChan <- err
-	//	}
-	//}()
+	go func() {
+		err := a.Server.StartServer()
+		if err != nil {
+			errChan <- err
+		}
+	}()
 
 	select {
 	case <-ctx.Done():

@@ -11,12 +11,13 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	Port string
-	Mux  *http.ServeMux
+	Server *http.Server
 	*delivery.RouteRegistry
 }
 
-func NewServer() *Server {
+func NewServer(
+	port string,
+) *Server {
 	healthMainHandler := health.NewMainHandler()
 	healthRouter := health.NewRouter(healthMainHandler)
 
@@ -25,17 +26,20 @@ func NewServer() *Server {
 		// add other routers here
 	)
 
-	mux := http.NewServeMux()
 	return &Server{
-		Mux:           mux,
+		Server: &http.Server{
+			Addr: ":" + port,
+		},
 		RouteRegistry: routeRegistry,
 	}
 }
 
 func (s *Server) StartServer() error {
-	s.RouteRegistry.RegisterAll(s.Mux)
+	mux := http.NewServeMux()
+	s.RouteRegistry.RegisterAll(mux)
 
-	if err := http.ListenAndServe(":"+s.Port, s.Mux); err != nil {
+	s.Server.Handler = mux
+	if err := s.Server.ListenAndServe(); err != nil {
 		return err
 	}
 
